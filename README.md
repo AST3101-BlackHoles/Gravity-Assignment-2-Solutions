@@ -117,7 +117,7 @@ where
 
 ```math
 \begin{align}
-one & = two
+one & = two \\
 three & = four
 \end{align}
 ```
