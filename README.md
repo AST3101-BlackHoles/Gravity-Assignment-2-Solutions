@@ -15,6 +15,12 @@
 >  - black holes with m1 = m2 = 30 Msun
 >  - neutron stars m1 = m2 = 1.4 and r1 = r2 = 13km
 
+BBH will plunge at ISCO
+
+```math
+R_\mathrm{ISCO} \sim \frac{6GM_\mathrm{tot}}{c^2}
+```
+
 
 > b) estimate the amplitude of the strain observed at Earth for a binary black hole systems with
 > 
