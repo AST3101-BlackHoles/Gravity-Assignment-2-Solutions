@@ -107,8 +107,26 @@ f_{60\,M_\odot} \sim 270\,\mathrm{Hz}
 
 > Using the quadropole approximation and neglecting radiation reaction, compute the strain for the general Keplerian trajectory of two point masses in Newtonian gravity. You can work in the center-of-mass frame.
 
+In the center-of-mass frame, we have
+
+```math
+H = \frac{p_r^2}{2\mu} + \frac{L^2}{2\mu r^2} - \frac{GM_\mathrm{tot}\mu}{r} = \mathrm{constant}
+```
+
+where
+
+```math
+one \\
+two
+```
+
 ---
 
 ## Extra (not graded)
 
 > Using the detector tensor and the definitions of all GW polarizations, plot the antenna power patterns across the sky for each polarization. Assume a cartesian coordinate system aligned with the detector arms. Is there anything special about the antenna pattern for breathing and longitudinal modes?
+
+Important points to note are:
+
+  * the detector response depends on both the direction to the source (RA, Dec) *and* an additional angle that determines the relative rotation between the wave's coordinate system and the detector's coordinate system (polarization angle)
+  * the response to the breathing and longitudinal modes are the same in magnitude and opposite in sign. This is because there is a linear combination of these modes that corresponds to isotropic expansion/contration, and the differential arm lengths measured by current interferometers will always be zero for isotropic expansion/contraction.
