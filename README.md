@@ -116,8 +116,10 @@ H = \frac{p_r^2}{2\mu} + \frac{L^2}{2\mu r^2} - \frac{GM_\mathrm{tot}\mu}{r} = \
 where
 
 ```math
-one \\
-two
+\begin{align}
+one & = two
+three & = four
+\end{align}
 ```
 
 ---
