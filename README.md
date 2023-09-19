@@ -120,7 +120,7 @@ M_\mathrm{tot} = m_1 + m_2
 ```
 
 ```math
-\mu = \frac{m_1 m_2}{M_\mathrm{tot}
+\mu = \frac{m_1 m_2}{M_\mathrm{tot}}
 ```
 
 ```math
