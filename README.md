@@ -146,12 +146,9 @@ L = \mu r^2 \dot{\theta} = \mathrm{constant}
 We can numerically solve the 1D equation of motion for `r(t)` given any initial conditions, then obtain `\theta(t)` and therefore `\vec{r}(t)`.
 A simple script to do this is included within this repo.
 
-**insert a plot showing**
+Plotting the trajectory for circular, elliptical, parabolic, and hyperbolic motion yields
 
-  * circular motion
-  * elliptical motion
-  * parabolic motion
-  * hyperbolic motion
+<img src="problem-2-motion.png">
 
 Now, we additionally know that
 
@@ -165,7 +162,9 @@ and therefore
 \bar{h}_{ij} = \frac{2G}{D} \left(\frac{m_1 m_2}{M_\mathrm{tot}}\right) \left( \ddot{r}_i r_j + 2 \dot{r}_i \dot{r}_j + r_i \ddot{r}_j \right)
 ```
 
-**insert a plot showing the different components h for each of the motions above**
+Plotting this for the different cases considered yields
+
+<img src="problem-2-strain.png">
 
 ---
 
