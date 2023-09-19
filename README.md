@@ -116,11 +116,34 @@ H = \frac{p_r^2}{2\mu} + \frac{L^2}{2\mu r^2} - \frac{GM_\mathrm{tot}\mu}{r} = \
 where
 
 ```math
-\begin{align}
-one & = two \\
-three & = four
-\end{align}
+M_\mathrm{tot} = m_1 + m_2
 ```
+
+```math
+\mu = \frac{m_1 m_2}{M_\mathrm{tot}
+```
+
+```math
+p_r = \mu \dot{r}
+```
+
+```math
+L = \mu r^2 \dot{\theta} = \mathrm{constant}
+```
+
+```math
+\vec{r} = \vec{r}_1 - \vec{r}_2 = r (\cos\theta, \sin\theta, 0)
+```
+
+```math
+\vec{r}_1 = -\frac{m_2}{M_\mathrm{tot}} \vec{r}
+```
+
+```math
+\vec{r}_2 = +\frac{m_1}{M_\mathrm{tot}} \vec{r}
+```
+
+We can numerically solve the 1D equation of motion for `$r(t)$` given any initial conditions, then obtain `$\theta(t)$` and therefore `$\vec{r}(t)$`.
 
 ---
 
