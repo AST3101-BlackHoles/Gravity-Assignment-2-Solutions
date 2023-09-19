@@ -34,11 +34,14 @@ D = 200 * Mpc
 #------------------------
 
 Mtot = m1 + m2
+mu = m1*m2 / Mtot # reduced mass
+
 Rsch = 2*G*Mtot/c**2 # Schwarzschild radius
 
 #-------------------------------------------------
 
-t = np.linspace(-500, +500, 10001) * (G*Mtot/c**3) # sec
+# dynamical time scale
+tdyn = (G*Mtot/c**3) # sec
 
 #-------------------------------------------------
 
@@ -47,12 +50,10 @@ fig_r = plt.figure(figsize=(6,3))
 ax_x = plt.subplot(2, 2, 3)
 ax_x.set_xlabel('$t$ [sec]')
 ax_x.set_ylabel('$r_x$ [Rsch]')
-ax_x.set_xlim(t[0], t[-1])
 
 ax_y = plt.subplot(2, 2, 1)
 #ax_y.set_xlabel('$t$ [sec]')
 plt.setp(ax_y.get_xticklabels(), visible=False)
-ax_y.set_xlim(t[0], t[-1])
 ax_y.set_ylabel('$r_y$ [Rsch]')
 
 ax_r = plt.subplot(1, 2, 2)
@@ -76,18 +77,15 @@ ax_xx = plt.subplot(3, 1, 1)
 #ax_xx.set_xlabel('$t$ [sec]')
 plt.setp(ax_xx.get_xticklabels(), visible=False)
 ax_xx.set_ylabel('$h_{xx}$')
-ax_xx.set_xlim(t[0], t[-1])
 
 ax_xy = plt.subplot(3, 1, 2)
 #ax_xy.set_xlabel('$t$ [sec]')
 plt.setp(ax_xy.get_xticklabels(), visible=False)
 ax_xy.set_ylabel('$h_{xy}$')
-ax_xy.set_xlim(t[0], t[-1])
 
 ax_yy = plt.subplot(3, 1, 3)
 ax_yy.set_xlabel('$t$ [sec]')
 ax_yy.set_ylabel('$h_{yy}$')
-ax_yy.set_xlim(t[0], t[-1])
 
 plt.subplots_adjust(
     top=0.95,
@@ -103,10 +101,17 @@ plt.subplots_adjust(
 ### place the orbit at 10x the radius of a BH
 r = 10 * Rsch
 
+Ecirc = - 0.5*G*m1*m2/r # energy of the circular orbit. This will be the smallest energy we consider
+
 ### compute the angular frequency via Kepler's law
 omega = (G*Mtot/r**3)**0.5
 
 ### compute the motion
+t = 2.5 * np.linspace(-np.pi, +np.pi, 1001) / omega # 2.5 orbits
+
+tmin = t[0] # save these for latter
+tmax = t[-1]
+
 x = r * np.cos(omega*t)
 y = r * np.sin(omega*t)
 
@@ -117,9 +122,9 @@ ax_y.plot(t, y/Rsch, label='circular')
 
 ### compute the strain
 
-h_xx = (2*G*m1*m2)/(D*Mtot) * -2*omega**2 * (x*x - y*y)
+h_xx = (2*G*m1*m2)/(D*Mtot*c**4) * -2*omega**2 * (x*x - y*y)
 h_yy = - h_xx
-h_xy = (2*G*m1*m2)/(D*Mtot) * -4*omega**2 * (x*y)
+h_xy = (2*G*m1*m2)/(D*Mtot*c**4) * -4*omega**2 * (x*y)
 
 ### plot the strain
 
@@ -131,25 +136,222 @@ ax_xy.plot(t, h_xy, label='circular')
 
 # elliptical
 
-#raise NotImplementedError
+Eellip = Ecirc / 2 ### add some extra energy but keep the orbit bound
+
+rmin = 10*Rsch # set the radius of closest approach
+
+### solve for the motion
+
+Lsqrd = 2*mu*rmin**2 * (Eellip + G*m1*m2/rmin)
+rmax = (G*m1*m1 + (G**2 * m1**2 * m2**2 - 4 * abs(Eellip) * Lsqrd/(2*mu))**0.5) / (2*abs(Eellip))
+
+Nstep = 100001
+
+r = np.empty(Nstep, dtype=float)
+r[0] = rmin*1.0001 # seed this slightly away from the minimum
+
+t = np.empty(Nstep, dtype=float)
+t[0] = 0.0
+
+theta = np.linspace(0, np.pi, Nstep)
+dtheta = theta[1] - theta[0]
+
+for ind in range(Nstep-1):
+    dtheta_dt = Lsqrd**0.5 / (mu*r[ind]**2)
+
+    dt = dtheta / dtheta_dt
+    t[ind+1] = t[ind] + dt
+
+    dr_dt_sqrd = (2/mu)*(Eellip + G*m1*m2/r[ind] - Lsqrd/(2*mu*r[ind]**2))
+    if dr_dt_sqrd < 0:
+        r[ind+1] = rmax
+    else:
+        r[ind+1] = r[ind] + dr_dt_sqrd**0.5*dt
+
+t = np.concatenate((-t[1:][::-1], t))
+r = np.concatenate((r[1:][::-1], r))
+theta = np.concatenate((-theta[1:][::-1], theta))
+
+rdot = np.gradient(r, t)
+thetadot = np.gradient(theta, t)
+
+x = r*np.cos(theta)
+y = r*np.sin(theta)
+
+xdot = rdot*np.cos(theta) - r*np.sin(theta)*thetadot
+xddot = np.gradient(xdot, t)
+
+ydot = rdot*np.sin(theta) + r*np.cos(theta)*thetadot
+yddot = np.gradient(ydot, t)
+
+### plot the trajectory
+
+ax_x.plot(t, x/Rsch, label='elliptical')
+ax_y.plot(t, y/Rsch, label='elliptical')
+ax_r.plot(x/Rsch, y/Rsch, label='elliptical')
+
+### compute the strain
+
+h_xx = (2*G*m1*m2)/(D*Mtot*c**4) * 2*(xddot*x + xdot*xdot)
+h_yy = (2*G*m1*m2)/(D*Mtot*c**4) * 2*(yddot*y + ydot*ydot)
+h_xy = (2*G*m1*m2)/(D*Mtot*c**4) * (xddot*y + 2*xdot*ydot + x*yddot)
+
+### plot the strain
+
+# clip h_xx due to numerical stability issues (from derivatives?)
+sel = np.abs(h_xx) < 1e-20
+
+ax_xx.plot(t[sel], h_xx[sel], label='elliptical')
+ax_yy.plot(t, h_yy, label='elliptical')
+ax_xy.plot(t, h_xy, label='elliptical')
 
 #-------------------------------------------------
 
 # parabolic
 
-#raise NotImplementedError
+rmin = 10*Rsch # set the radius of closest approach
+
+Lsqrd = 2*G*Mtot*mu**2*rmin
+
+### solve for the motion
+
+Nstep = 100001
+
+r = np.empty(Nstep, dtype=float)
+r[0] = rmin*1.0001 # seed this slightly away from the minimum
+
+t = np.empty(Nstep, dtype=float)
+t[0] = 0.0
+
+theta = np.linspace(0, 3*np.pi/4, Nstep)
+dtheta = theta[1] - theta[0]
+
+for ind in range(Nstep-1):
+    dtheta_dt = Lsqrd**0.5 / (mu*r[ind]**2)
+
+    dt = dtheta / dtheta_dt
+    t[ind+1] = t[ind] + dt
+
+    dr_dt = (2*G*Mtot*(1/r[ind] - rmin/r[ind]**2))**0.5
+    r[ind+1] = r[ind] + dr_dt*dt
+
+t = np.concatenate((-t[1:][::-1], t))
+r = np.concatenate((r[1:][::-1], r))
+theta = np.concatenate((-theta[1:][::-1], theta))
+
+rdot = np.gradient(r, t)
+thetadot = np.gradient(theta, t)
+
+x = r*np.cos(theta)
+y = r*np.sin(theta)
+
+xdot = rdot*np.cos(theta) - r*np.sin(theta)*thetadot
+xddot = np.gradient(xdot, t)
+
+ydot = rdot*np.sin(theta) + r*np.cos(theta)*thetadot
+yddot = np.gradient(ydot, t)
+
+### plot the trajectory
+
+ax_x.plot(t, x/Rsch, label='parabolic')
+ax_y.plot(t, y/Rsch, label='parabolic')
+ax_r.plot(x/Rsch, y/Rsch, label='parabolic')
+
+### compute the strain
+
+h_xx = (2*G*m1*m2)/(D*Mtot*c**4) * 2*(xddot*x + xdot*xdot)
+h_yy = (2*G*m1*m2)/(D*Mtot*c**4) * 2*(yddot*y + ydot*ydot)
+h_xy = (2*G*m1*m2)/(D*Mtot*c**4) * (xddot*y + 2*xdot*ydot + x*yddot)
+
+### plot the strain
+
+# clip strain b/c of numerical issues
+sel = np.abs(h_xx) < 1e-20
+
+ax_xx.plot(t[sel], h_xx[sel], label='parabolic')
+ax_yy.plot(t, h_yy, label='parabolic')
+ax_xy.plot(t, h_xy, label='parabolic')
 
 #-------------------------------------------------
 
 # hyperbolic
 
-#raise NotImplementedError
+Ehyper = abs(Ecirc) / 2 ### add some extra energy and unbind the orbit
+
+rmin = 10*Rsch # set the radius of closest approach
+Lsqrd = 2*mu*rmin**2 * Ehyper + G*m1*m2 * 2*mu*rmin
+
+### solve for the motion
+
+Nstep = 100001
+
+r = np.empty(Nstep, dtype=float)
+r[0] = rmin*1.0001 # seed this slightly away from the minimum
+
+t = np.empty(Nstep, dtype=float)
+t[0] = 0.0
+
+theta = np.linspace(0, np.pi*11/16, Nstep)
+dtheta = theta[1] - theta[0]
+
+for ind in range(Nstep-1):
+    dtheta_dt = Lsqrd**0.5 / (mu*r[ind]**2)
+
+    dt = dtheta / dtheta_dt
+    t[ind+1] = t[ind] + dt
+
+    dr_dt = ((2/mu)*(Ehyper + G*m1*m2/r[ind] - Lsqrd/(2*mu*r[ind]**2)))**0.5
+    r[ind+1] = r[ind] + dr_dt*dt
+
+t = np.concatenate((-t[1:][::-1], t))
+r = np.concatenate((r[1:][::-1], r))
+theta = np.concatenate((-theta[1:][::-1], theta))
+
+rdot = np.gradient(r, t)
+thetadot = np.gradient(theta, t)
+
+x = r*np.cos(theta)
+y = r*np.sin(theta)
+
+xdot = rdot*np.cos(theta) - r*np.sin(theta)*thetadot
+xddot = np.gradient(xdot, t)
+
+ydot = rdot*np.sin(theta) + r*np.cos(theta)*thetadot
+yddot = np.gradient(ydot, t)
+
+### plot the trajectory
+
+ax_x.plot(t, x/Rsch, label='hyperbolic')
+ax_y.plot(t, y/Rsch, label='hyperbolic')
+ax_r.plot(x/Rsch, y/Rsch, label='hyperbolic')
+
+### compute the strain
+
+h_xx = (2*G*m1*m2)/(D*Mtot*c**4) * 2*(xddot*x + xdot*xdot)
+h_yy = (2*G*m1*m2)/(D*Mtot*c**4) * 2*(yddot*y + ydot*ydot)
+h_xy = (2*G*m1*m2)/(D*Mtot*c**4) * (xddot*y + 2*xdot*ydot + x*yddot)
+
+### plot the strain
+
+# clip strain b/c of numerical issues
+sel = np.abs(h_xx) < 1e-20
+
+ax_xx.plot(t[sel], h_xx[sel], label='hyperbolic')
+ax_yy.plot(t, h_yy, label='hyperbolic')
+ax_xy.plot(t, h_xy, label='hyperbolic')
 
 #-------------------------------------------------
 
 # decorate
 
 ax_r.legend(loc='best')
+
+lim = 50
+ax_r.set_xlim(-lim, +lim)
+ax_r.set_ylim(-lim, +lim)
+
+ax_x.set_ylim(-lim, +lim)
+ax_y.set_ylim(-lim, +lim)
 
 for ax in fig_r.axes + fig_h.axes:
     ax.tick_params(
@@ -160,6 +362,9 @@ for ax in fig_r.axes + fig_h.axes:
         direction='in',
         which='both',
     )
+
+for ax in [ax_x, ax_y, ax_xx, ax_yy, ax_xy]:
+    ax.set_xlim(tmin, tmax)
 
 # save
 
