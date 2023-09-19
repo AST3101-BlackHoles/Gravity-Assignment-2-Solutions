@@ -6,8 +6,165 @@ __author__ = "Reed Essick (reed.essick@gmail.com)"
 
 #-------------------------------------------------
 
-### define constants
+import numpy as np
+
+import matplotlib
+matplotlib.use("Agg")
+from matplotlib import pyplot as plt
 
 #-------------------------------------------------
 
+### define constants
 
+G = 6.674e-11 # kg^-1 m^3 s^-2
+
+Msun = 1.989e30 # kg
+
+c = 299792458 # m/s
+
+Mpc = 3.086e+22 # m
+
+#------------------------
+
+m1 = 30.0 * Msun
+m2 = 30.0 * Msun
+
+D = 200 * Mpc
+
+#------------------------
+
+Mtot = m1 + m2
+Rsch = 2*G*Mtot/c**2 # Schwarzschild radius
+
+#-------------------------------------------------
+
+t = np.linspace(-500, +500, 10001) * (G*Mtot/c**3) # sec
+
+#-------------------------------------------------
+
+fig_r = plt.figure(figsize=(6,3))
+
+ax_x = plt.subplot(2, 2, 3)
+ax_x.set_xlabel('$t$ [sec]')
+ax_x.set_ylabel('$r_x$ [Rsch]')
+ax_x.set_xlim(t[0], t[-1])
+
+ax_y = plt.subplot(2, 2, 1)
+#ax_y.set_xlabel('$t$ [sec]')
+plt.setp(ax_y.get_xticklabels(), visible=False)
+ax_y.set_xlim(t[0], t[-1])
+ax_y.set_ylabel('$r_y$ [Rsch]')
+
+ax_r = plt.subplot(1, 2, 2)
+ax_r.set_xlabel('$r_x$ [Rsch]')
+ax_r.set_ylabel('$r_y$ [Rsch]')
+ax_r.yaxis.tick_right()
+ax_r.yaxis.set_label_position('right')
+
+plt.subplots_adjust(
+    top=0.90,
+    bottom=0.20,
+    left=0.15,
+    right=0.85,
+)
+
+#------------------------
+
+fig_h = plt.figure(figsize=(6,6))
+
+ax_xx = plt.subplot(3, 1, 1)
+#ax_xx.set_xlabel('$t$ [sec]')
+plt.setp(ax_xx.get_xticklabels(), visible=False)
+ax_xx.set_ylabel('$h_{xx}$')
+ax_xx.set_xlim(t[0], t[-1])
+
+ax_xy = plt.subplot(3, 1, 2)
+#ax_xy.set_xlabel('$t$ [sec]')
+plt.setp(ax_xy.get_xticklabels(), visible=False)
+ax_xy.set_ylabel('$h_{xy}$')
+ax_xy.set_xlim(t[0], t[-1])
+
+ax_yy = plt.subplot(3, 1, 3)
+ax_yy.set_xlabel('$t$ [sec]')
+ax_yy.set_ylabel('$h_{yy}$')
+ax_yy.set_xlim(t[0], t[-1])
+
+plt.subplots_adjust(
+    top=0.95,
+    bottom=0.10,
+    left=0.10,
+    right=0.95,
+)
+
+#-------------------------------------------------
+
+# circular motion
+
+### place the orbit at 10x the radius of a BH
+r = 10 * Rsch
+
+### compute the angular frequency via Kepler's law
+omega = (G*Mtot/r**3)**0.5
+
+### compute the motion
+x = r * np.cos(omega*t)
+y = r * np.sin(omega*t)
+
+### plot the motion
+ax_r.plot(x/Rsch, y/Rsch, label='circular')
+ax_x.plot(t, x/Rsch, label='circular')
+ax_y.plot(t, y/Rsch, label='circular')
+
+### compute the strain
+
+h_xx = (2*G*m1*m2)/(D*Mtot) * -2*omega**2 * (x*x - y*y)
+h_yy = - h_xx
+h_xy = (2*G*m1*m2)/(D*Mtot) * -4*omega**2 * (x*y)
+
+### plot the strain
+
+ax_xx.plot(t, h_xx, label='circular')
+ax_yy.plot(t, h_yy, label='circular')
+ax_xy.plot(t, h_xy, label='circular')
+
+#-------------------------------------------------
+
+# elliptical
+
+#raise NotImplementedError
+
+#-------------------------------------------------
+
+# parabolic
+
+#raise NotImplementedError
+
+#-------------------------------------------------
+
+# hyperbolic
+
+#raise NotImplementedError
+
+#-------------------------------------------------
+
+# decorate
+
+ax_r.legend(loc='best')
+
+for ax in fig_r.axes + fig_h.axes:
+    ax.tick_params(
+        left=True,
+        right=True,
+        top=True,
+        bottom=True,
+        direction='in',
+        which='both',
+    )
+
+# save
+
+fig_r.savefig('problem-2-motion.png')
+plt.close(fig_r)
+
+fig_h.savefig('problem-2-strain.png')
+plt.close(fig_h)
