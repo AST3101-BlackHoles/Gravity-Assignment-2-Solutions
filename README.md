@@ -48,14 +48,60 @@ f_\mathrm{GW} = \frac{1}{\pi}\sqrt{\frac{GM}{R^3}} \approx 1460\,\mathrm{Hz}
 ```
 
 > b) estimate the amplitude of the strain observed at Earth for a binary black hole systems with
-> 
+>
 >   - m1 = m2 = 30 Msun
-
 >   - orbital frequency at ISCO
-
 >   - luminosity distance of 200 Mpc from Earth
 
+From lecture, we have the following expression
+
+```math
+|\bar{h}_{ij}| \sim \frac{4c}{r} \left( \frac{G}{c^3} \mathcal{M} \Omega_\mathrm{orb} \right) \Omega_\mathrm{orb}^{-1}
+```
+
+and at ISCO
+
+```math
+\Omega_\mathrm{orb} = 6^{-3/2} \frac{c^3}{GM_\mathrm{tot}}
+```
+
+Plugging in numbers, we get
+
+```math
+\Omega_\mathrm{orb} = 230\,\mathrm{rad/sec}
+```
+
+```math
+\mathcal{M} = \frac{(m_1 m_2)^{3/5}}{(m_1+m_2)^{1/5}} = 26.1\,M_\odot = 5.19\times10^{31}\,\mathrm{kg}
+```
+
+```math
+r = 200\,\mathrm{Mpc} = 6.172 \times 10^{24}\,\mathrm{m}
+```
+
+so that
+
+```math
+|\bar{h}_{ij}| \sim 2.4 \times 10^{-21}
+```
+
 > c) what is the characteristic frequency of a Black Hole's normal modes? (hint, what is the light-travel time?)
+
+We consider the time it takes light to go around the circumfrence of a BH.
+
+```math
+T \sim \frac{2\pi R}{c} \sim \frac{4\pi G M}{c^3} \sim (60\,\mu\mathrm{s}) \frac{M}{M_\odot}
+```
+
+for a 30+30=60 Msun BH, we obtain
+
+```math
+T_{60\,M_\odot} \sim 3.7\,\mathrm{ms}
+```
+
+```math
+f_{60\,M_\odot} \sim 270\,\mathrm{Hz}
+```
 
 ## Problem 2
 
